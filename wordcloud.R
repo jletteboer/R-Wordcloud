@@ -1,6 +1,6 @@
 # Author: John Letteboer
 # Date: 2015-12-01
-# Description: This R script read a csv data file and produce a word cloud of a given column
+# Description: This R code read a csv data file and creates a wordcloud of a given column
 # Packages Used: tm, wordcloud, RColorBrewer
 #
 # ===
