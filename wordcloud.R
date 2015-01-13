@@ -37,6 +37,17 @@ formatPrompt <- function() {
   format
 }
 
+# Read output amount words
+amountPrompt <- function() {
+  amount <- readline("How many words do you want to display? [1-n]: ")
+  amount <- as.numeric(amount)
+  if (is.na(amount)) {
+    message("Invalid amount. Will display all.")
+    amount <- Inf
+   }
+   amount
+}
+
 # Making word cloud
 makeWordCloud <- function(textVec, format = 1) { # 1 = pdf, 2 = png
   require(tm)
@@ -44,7 +55,7 @@ makeWordCloud <- function(textVec, format = 1) { # 1 = pdf, 2 = png
   require(RColorBrewer)
 
   ap.corpus <- Corpus(DataframeSource(data.frame(textVec)))
-  ap.corpus <- tm_map(ap.corpus, tolower)
+  ap.corpus <- tm_map(ap.corpus, content_transformer(tolower))
   ap.corpus <- tm_map(ap.corpus, function(x) {
     removeWords(x, append(stopwords("english"), c("via")))
   })
@@ -61,10 +72,17 @@ makeWordCloud <- function(textVec, format = 1) { # 1 = pdf, 2 = png
   } else if (format == 1) {
     pdf("wordcloud.pdf")
   }
-
+  
+  # Amount of words to display
+  if (amount == Inf) {
+    Inf
+  } else if (amount != "") {
+    amount
+  }
+  
   wordcloud(ap.d$word, ap.d$freq,
             scale=c(8, .2), min.freq = 3,
-            max.words = Inf, random.order = FALSE,
+            max.words = amount, random.order = FALSE,
             rot.per = .15, colors = pal2)
 
   invisible(dev.off())
@@ -76,4 +94,5 @@ df <- read.csv(file, colClasses = "character", fileEncoding = "UTF-8")
 
 colnum <- colPrompt()
 format <- formatPrompt()
+amount <- amountPrompt()
 makeWordCloud(df[, colnum], format)
