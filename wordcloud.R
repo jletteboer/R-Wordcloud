@@ -6,6 +6,11 @@
 # ===
 # Functions
 #
+
+# Prompt Working directoy
+wd <- getwd()
+cat(sprintf("Current working dir: %s\n", wd))
+
 # Read file name
 filePrompt <- function() {
   file <- readline("Which csv file do you want to analyze? ")
@@ -48,6 +53,17 @@ amountPrompt <- function() {
    amount
 }
 
+# read custom words file name function
+cwfilePrompt <- function() {
+  cwfile <- readline("Which txt file do you want to use for custom removeWords? ")
+  cwfile <- as.character(cwfile)
+  if(!grepl(".csv$", cwfile))
+    cwfile <- paste(cwfile, ".txt", sep = "")
+  if(!cwfile %in% list.files())
+    stop("file not found")
+  cwfile
+}
+
 # Making word cloud
 makeWordCloud <- function(textVec, format = 1) { # 1 = pdf, 2 = png
   require(tm)
@@ -56,9 +72,8 @@ makeWordCloud <- function(textVec, format = 1) { # 1 = pdf, 2 = png
 
   ap.corpus <- Corpus(DataframeSource(data.frame(textVec)))
   ap.corpus <- tm_map(ap.corpus, content_transformer(tolower))
-  ap.corpus <- tm_map(ap.corpus, function(x) {
-    removeWords(x, append(stopwords("english"), c("via")))
-  })
+  ap.corpus <- tm_map(ap.corpus, removeWords, stopwords("english"))
+  ap.corpus <- tm_map(ap.corpus, removeWords, cw)
   ap.corpus <- tm_map(ap.corpus, removePunctuation)
   ap.tdm <- TermDocumentMatrix(ap.corpus)
   ap.m <- as.matrix(ap.tdm)
@@ -95,4 +110,6 @@ df <- read.csv(file, colClasses = "character", fileEncoding = "UTF-8")
 colnum <- colPrompt()
 format <- formatPrompt()
 amount <- amountPrompt()
+cwfile <- cwfilePrompt()
+cw <- tolower(readLines(file(cwfile, "r")))
 makeWordCloud(df[, colnum], format)
